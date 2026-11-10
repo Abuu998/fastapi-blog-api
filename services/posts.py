@@ -1,11 +1,12 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.posts import PostResponse, PostCreate, PostUpdate
 
 from models import Post
 
 
-def create(post: PostCreate, db: Session) -> PostResponse:
+async def create(post: PostCreate, db: AsyncSession) -> PostResponse:
     new_post = Post(
         title=post.title,
         content=post.content,
@@ -13,52 +14,59 @@ def create(post: PostCreate, db: Session) -> PostResponse:
     )
 
     db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
+    await db.commit()
+    await db.refresh(new_post, attribute_names=["author"])
 
     return new_post
 
 
-def find_all(db: Session) -> list[PostResponse]:
-    result = db.execute(select(Post))
+async def find_all(db: AsyncSession) -> list[PostResponse]:
+    result = await db.execute(
+        select(Post)
+        .options(selectinload(Post.author))
+    )
     posts = result.scalars().all()
 
     return posts
 
 
-def find_one(id: str, db: Session) -> PostResponse | None:
-    result = db.execute(select(Post).where(Post.id == id))
+async def find_one(id: str, db: AsyncSession) -> PostResponse | None:
+    result = await db.execute(
+        select(Post)
+        .options(selectinload(Post.author))
+        .where(Post.id == id)
+    )
     post = result.scalars().first()
 
     return post
 
 
-def update_full(id: str, changed: PostCreate, db: Session) -> PostResponse:
-    post = find_one(id, db)
+async def update_full(id: str, changed: PostCreate, db: AsyncSession) -> PostResponse:
+    post = await find_one(id, db)
 
     post.title = changed.title
     post.content = changed.content
 
-    db.commit()
-    db.refresh(post)
+    await db.commit()
+    await db.refresh(post, attribute_names=["author"])
 
     return post
 
 
-def update_patch(id: str, changed: PostUpdate, db: Session) -> PostResponse:
-    post = find_one(id, db)
+async def update_patch(id: str, changed: PostUpdate, db: AsyncSession) -> PostResponse:
+    post = await find_one(id, db)
 
     update_data = changed.model_dump(exclude_unset=True)
 
     for field, value in update_data.items():
         setattr(post, field, value)
 
-    db.commit()
-    db.refresh(post)
+    await db.commit()
+    await db.refresh(post, attribute_names=["author"])
 
     return post
 
 
-def delete(post: PostResponse, db: Session):
-    db.delete(post)
-    db.commit()
+async def delete(post: PostResponse, db: AsyncSession):
+    await db.delete(post)
+    await db.commit()

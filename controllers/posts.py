@@ -5,7 +5,7 @@ from services import posts, users
 
 from typing import Annotated 
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
 
@@ -20,8 +20,8 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     response_model=PostResponse
 )
-def create(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
-    author = users.find_one(post.user_id, db)
+async def create(post: PostCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    author = await users.find_one(post.user_id, db)
 
     if not author:
         raise HTTPException(
@@ -29,7 +29,7 @@ def create(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
             detail="Author not found!"
         )
 
-    return posts.create(post, db)
+    return await posts.create(post, db)
 
 
 @router.get(
@@ -37,8 +37,8 @@ def create(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
     status_code=status.HTTP_200_OK,
     response_model=list[PostResponse]
 )
-def find_all(db: Annotated[Session, Depends(get_db)]):
-    return posts.find_all(db)
+async def find_all(db: Annotated[AsyncSession, Depends(get_db)]):
+    return await posts.find_all(db)
 
 
 @router.get(
@@ -46,8 +46,8 @@ def find_all(db: Annotated[Session, Depends(get_db)]):
     status_code=status.HTTP_200_OK,
     response_model=PostResponse
 )
-def find_one(id: str, db: Annotated[Session, Depends(get_db)]):
-    post = posts.find_one(id, db)
+async def find_one(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    post = await posts.find_one(id, db)
 
     if not post:
         raise HTTPException(
@@ -63,8 +63,8 @@ def find_one(id: str, db: Annotated[Session, Depends(get_db)]):
     status_code=status.HTTP_200_OK,
     response_model=PostResponse
 )
-def update_full(id: str, changed: PostCreate, db: Annotated[Session, Depends(get_db)]):
-    post = posts.find_one(id, db)
+async def update_full(id: str, changed: PostCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    post = await posts.find_one(id, db)
 
     if not post:
         raise HTTPException(
@@ -72,7 +72,7 @@ def update_full(id: str, changed: PostCreate, db: Annotated[Session, Depends(get
             detail="Post not found"
         )
 
-    return posts.update_full(id, changed, db)
+    return await posts.update_full(id, changed, db)
 
 
 @router.patch(
@@ -80,8 +80,8 @@ def update_full(id: str, changed: PostCreate, db: Annotated[Session, Depends(get
     status_code=status.HTTP_200_OK,
     response_model=PostResponse
 )
-def update_patch(id: str, changed: PostUpdate, db: Annotated[Session, Depends(get_db)]):
-    post = posts.find_one(id, db)
+async def update_patch(id: str, changed: PostUpdate, db: Annotated[AsyncSession, Depends(get_db)]):
+    post = await posts.find_one(id, db)
 
     if not post:
         raise HTTPException(
@@ -89,15 +89,15 @@ def update_patch(id: str, changed: PostUpdate, db: Annotated[Session, Depends(ge
             detail="Post not found"
         )
 
-    return posts.update_patch(id, changed, db)
+    return await posts.update_patch(id, changed, db)
 
 
 @router.delete(
     "/{id}", 
     status_code=status.HTTP_204_NO_CONTENT
 )
-def delete(id: str, db: Annotated[Session, Depends(get_db)]):
-    post = posts.find_one(id, db)
+async def delete(id: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    post = await posts.find_one(id, db)
 
     if not post:
         raise HTTPException(
@@ -105,4 +105,4 @@ def delete(id: str, db: Annotated[Session, Depends(get_db)]):
             detail="Post not found"
         )
 
-    return posts.delete(post, db)
+    return await posts.delete(post, db)
