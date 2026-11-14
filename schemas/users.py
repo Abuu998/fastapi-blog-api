@@ -9,14 +9,19 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    pass
+    password: str = Field(min_length=8)
 
 
-class UserResponse(UserBase):
+class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
+    name: str
     image_url: str | None
+
+
+class UserPrivate(UserPublic):
+    email: EmailStr
     created_at: datetime
     updated_at: datetime
 

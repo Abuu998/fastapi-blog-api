@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
-from .users import UserResponse
+from .users import UserPublic
 
 
 class PostBase(BaseModel):
@@ -9,7 +9,7 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    user_id: str # TEMPORARY
+    pass
 
 
 class PostUpdate(PostBase):
@@ -22,6 +22,6 @@ class PostResponse(PostBase):
 
     id: str
     user_id: str
-    author: UserResponse
+    author: UserPublic
     created_at: datetime
     updated_at: datetime

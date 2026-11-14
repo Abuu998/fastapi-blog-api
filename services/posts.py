@@ -6,12 +6,8 @@ from schemas.posts import PostResponse, PostCreate, PostUpdate
 from models import Post
 
 
-async def create(post: PostCreate, db: AsyncSession) -> PostResponse:
-    new_post = Post(
-        title=post.title,
-        content=post.content,
-        user_id=post.user_id
-    )
+async def create(user_id: str, post: PostCreate, db: AsyncSession) -> PostResponse:
+    new_post = Post(title=post.title, content=post.content, user_id=user_id)
 
     db.add(new_post)
     await db.commit()
@@ -21,10 +17,7 @@ async def create(post: PostCreate, db: AsyncSession) -> PostResponse:
 
 
 async def find_all(db: AsyncSession) -> list[PostResponse]:
-    result = await db.execute(
-        select(Post)
-        .options(selectinload(Post.author))
-    )
+    result = await db.execute(select(Post).options(selectinload(Post.author)))
     posts = result.scalars().all()
 
     return posts
@@ -32,9 +25,7 @@ async def find_all(db: AsyncSession) -> list[PostResponse]:
 
 async def find_one(id: str, db: AsyncSession) -> PostResponse | None:
     result = await db.execute(
-        select(Post)
-        .options(selectinload(Post.author))
-        .where(Post.id == id)
+        select(Post).options(selectinload(Post.author)).where(Post.id == id)
     )
     post = result.scalars().first()
 

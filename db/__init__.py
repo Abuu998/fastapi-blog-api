@@ -1,13 +1,14 @@
+from typing import Annotated
+
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
-
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./blog.db"
+from config import settings
 
 
 engine = create_async_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={ "check_same_thread": False }
+    settings.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
 
@@ -25,3 +26,6 @@ class Base(DeclarativeBase):
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
+
+
+AsyncDabataseSession = Annotated[AsyncSession, Depends(get_db)]

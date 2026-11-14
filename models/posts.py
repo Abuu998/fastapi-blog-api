@@ -12,24 +12,20 @@ class BasePost(Base):
     __tablename__ = "posts"
 
     id: Mapped[str] = mapped_column(
-        Text, 
-        primary_key=True, 
+        Text,
+        primary_key=True,
         default=utils.generate_id,
-        index=True, 
+        index=True,
     )
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=UTC), 
-        default=lambda: datetime.now(UTC)
+        DateTime(timezone=UTC), default=lambda: datetime.now(UTC)
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=UTC), 
-        default=lambda: datetime.now(UTC)
+        DateTime(timezone=UTC), default=lambda: datetime.now(UTC)
     )
 
     user_id: Mapped[str] = mapped_column(
-        ForeignKey("users.id"),
-        nullable=False,
-        index=True
+        ForeignKey("users.id"), nullable=False, index=True
     )
